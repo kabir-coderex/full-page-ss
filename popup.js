@@ -49,7 +49,7 @@ const PREDEFINED_DEVICES = [
 
 const ROW_STYLE  = 'display:flex; align-items:center; gap:4px; padding:2px 0;';
 const NAME_STYLE = 'flex:1; font-size:11px;';
-const NUM_STYLE  = 'width:46px; font-size:11px; text-align:right; padding:1px 3px; box-sizing:border-box;';
+const NUM_STYLE  = 'width:60px; font-size:11px; text-align:right; padding:1px 3px; box-sizing:border-box;';
 
 // Build predefined rows
 PREDEFINED_DEVICES.forEach(device => {
@@ -107,7 +107,7 @@ function addCustomRow(width = '') {
 
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
-  removeBtn.textContent = '×';
+  removeBtn.textContent = 'x';
   removeBtn.style.cssText = 'border:none; background:none; cursor:pointer; color:#999; font-size:14px; padding:0 2px; line-height:1;';
   removeBtn.addEventListener('click', () => row.remove());
 
