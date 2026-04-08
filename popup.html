@@ -25,6 +25,34 @@
   </div>
 
   <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
+      Format & Quality
+    </div>
+    <div style="padding:6px 8px;">
+      <div style="display:flex; gap:8px; margin-bottom:6px;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-png" value="png" checked /> PNG
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-jpeg" value="jpeg" /> JPEG
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-webp" value="webp" /> WebP
+        </label>
+      </div>
+      <div id="quality-control" style="display:none;">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">
+          Quality: <span id="quality-value">92</span>%
+        </label>
+        <input type="range" id="quality-slider" min="1" max="100" value="92" style="width:100%; cursor:pointer;" />
+        <div style="font-size:10px; color:#666; margin-top:4px;">
+          Higher quality = larger file size
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
     <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
       <input type="checkbox" id="responsive-toggle" /> Responsive capture
     </label>

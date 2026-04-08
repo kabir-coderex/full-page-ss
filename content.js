@@ -8,7 +8,7 @@ async function captureVisible() {
   });
 }
 
-function generateFilename(device, namingConfig) {
+function generateFilename(device, namingConfig, formatConfig) {
   // Extract page info
   const pageTitle = document.title || 'untitled';
   const domain = window.location.hostname || 'localhost';
@@ -57,7 +57,11 @@ function generateFilename(device, namingConfig) {
     filename = 'screenshot-' + Date.now();
   }
 
-  return filename + '.png';
+  // Add extension based on format
+  const format = (formatConfig && formatConfig.format) || 'png';
+  const extension = format === 'jpeg' ? 'jpg' : format;
+  
+  return filename + '.' + extension;
 }
 
 function saveToHistory(filename) {
@@ -95,7 +99,7 @@ async function resizeToViewport(targetWidth) {
   }
 }
 
-async function captureFullPage(device, namingConfig) {
+async function captureFullPage(device, namingConfig, formatConfig) {
   const totalHeight = Math.max(
     document.body.scrollHeight,
     document.documentElement.scrollHeight,
@@ -146,8 +150,29 @@ async function captureFullPage(device, namingConfig) {
     y += img.height;
   }
 
-  const finalImage = canvas.toDataURL('image/png');
-  const filename = generateFilename(device, namingConfig);
+  // Generate image in selected format with quality settings
+  const format = (formatConfig && formatConfig.format) || 'png';
+  const quality = (formatConfig && formatConfig.quality) || 92;
+  
+  let finalImage;
+  let mimeType;
+  
+  if (format === 'png') {
+    mimeType = 'image/png';
+    finalImage = canvas.toDataURL(mimeType);
+  } else if (format === 'jpeg') {
+    mimeType = 'image/jpeg';
+    finalImage = canvas.toDataURL(mimeType, quality / 100);
+  } else if (format === 'webp') {
+    mimeType = 'image/webp';
+    finalImage = canvas.toDataURL(mimeType, quality / 100);
+  } else {
+    // Fallback to PNG
+    mimeType = 'image/png';
+    finalImage = canvas.toDataURL(mimeType);
+  }
+
+  const filename = generateFilename(device, namingConfig, formatConfig);
 
   chrome.runtime.sendMessage({
     action: 'download',
@@ -159,7 +184,7 @@ async function captureFullPage(device, namingConfig) {
   saveToHistory(filename);
 }
 
-async function startFullPageCapture(namingConfig) {
+async function startFullPageCapture(namingConfig, formatConfig) {
   const style = document.createElement('style');
   style.innerHTML = `
     #wpadminbar { display: none !important; }
@@ -179,10 +204,10 @@ async function startFullPageCapture(namingConfig) {
     device = 'mobile';
   }
 
-  await captureFullPage(device, namingConfig);
+  await captureFullPage(device, namingConfig, formatConfig);
 }
 
-async function startResponsiveCapture(breakpoints, namingConfig) {
+async function startResponsiveCapture(breakpoints, namingConfig, formatConfig) {
   const style = document.createElement('style');
   style.innerHTML = `
     #wpadminbar { display: none !important; }
@@ -196,7 +221,7 @@ async function startResponsiveCapture(breakpoints, namingConfig) {
 
   for (const { width, label } of breakpoints) {
     await resizeToViewport(width);
-    await captureFullPage(label, namingConfig);
+    await captureFullPage(label, namingConfig, formatConfig);
   }
 
   // Restore original window size
@@ -206,9 +231,9 @@ async function startResponsiveCapture(breakpoints, namingConfig) {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === 'startCapture') {
     if (msg.responsive && msg.breakpoints && msg.breakpoints.length > 0) {
-      startResponsiveCapture(msg.breakpoints, msg.namingConfig);
+      startResponsiveCapture(msg.breakpoints, msg.namingConfig, msg.formatConfig);
     } else {
-      startFullPageCapture(msg.namingConfig);
+      startFullPageCapture(msg.namingConfig, msg.formatConfig);
     }
   }
 });

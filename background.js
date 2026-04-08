@@ -31,7 +31,8 @@ chrome.commands.onCommand.addListener(async (command) => {
     chrome.storage.local.get([
       'lastResponsive', 'lastBreakpoints',
       'lastNamingEnabled', 'lastIncludeDomain', 'lastIncludeTitle', 
-      'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName'
+      'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName',
+      'lastFormat', 'lastQuality'
     ], (res) => {
       const responsive  = res.lastResponsive || false;
       const breakpoints = res.lastBreakpoints || null;
@@ -45,11 +46,17 @@ chrome.commands.onCommand.addListener(async (command) => {
         customName: res.lastCustomName || '',
       };
 
+      const formatConfig = {
+        format: res.lastFormat || 'png',
+        quality: res.lastQuality || 92,
+      };
+
       chrome.tabs.sendMessage(tab.id, {
         action: 'startCapture',
         responsive,
         breakpoints,
         namingConfig,
+        formatConfig,
       });
     });
   }

@@ -5,6 +5,12 @@ const includeTitle      = document.getElementById('include-title');
 const includeTime       = document.getElementById('include-time');
 const includeDevice     = document.getElementById('include-device');
 const customNameInput   = document.getElementById('custom-name');
+const formatPng         = document.getElementById('format-png');
+const formatJpeg        = document.getElementById('format-jpeg');
+const formatWebp        = document.getElementById('format-webp');
+const qualityControl    = document.getElementById('quality-control');
+const qualitySlider     = document.getElementById('quality-slider');
+const qualityValue      = document.getElementById('quality-value');
 const responsiveToggle  = document.getElementById('responsive-toggle');
 const devicePanel       = document.getElementById('device-panel');
 const deviceList        = document.getElementById('device-list');
@@ -108,6 +114,20 @@ historyToggle.addEventListener('change', () => {
   if (historyToggle.checked) {
     loadHistory();
   }
+});
+
+// Format selection handlers
+function updateQualityVisibility() {
+  const format = document.querySelector('input[name="format"]:checked').value;
+  qualityControl.style.display = (format === 'jpeg' || format === 'webp') ? 'block' : 'none';
+}
+
+formatPng.addEventListener('change', updateQualityVisibility);
+formatJpeg.addEventListener('change', updateQualityVisibility);
+formatWebp.addEventListener('change', updateQualityVisibility);
+
+qualitySlider.addEventListener('input', () => {
+  qualityValue.textContent = qualitySlider.value;
 });
 
 responsiveToggle.addEventListener('change', () => {
@@ -271,7 +291,8 @@ clearHistoryBtn.addEventListener('click', () => {
 chrome.storage.local.get([
   'lastResponsive', 'lastDeviceState', 
   'lastNamingEnabled', 'lastIncludeDomain', 'lastIncludeTitle', 
-  'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName'
+  'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName',
+  'lastFormat', 'lastQuality'
 ], (res) => {
   if (res.lastNamingEnabled) {
     namingToggle.checked = true;
@@ -285,6 +306,19 @@ chrome.storage.local.get([
   includeDevice.checked = res.lastIncludeDevice || false;
   
   if (res.lastCustomName) customNameInput.value = res.lastCustomName;
+
+  // Set format (default to PNG)
+  const format = res.lastFormat || 'png';
+  if (format === 'png') formatPng.checked = true;
+  else if (format === 'jpeg') formatJpeg.checked = true;
+  else if (format === 'webp') formatWebp.checked = true;
+  
+  // Set quality (default to 92)
+  const quality = res.lastQuality || 92;
+  qualitySlider.value = quality;
+  qualityValue.textContent = quality;
+  
+  updateQualityVisibility();
 
   if (res.lastResponsive) {
     responsiveToggle.checked = true;
@@ -306,6 +340,8 @@ async function start() {
 
   const namingEnabled   = namingToggle.checked;
   const customName      = customNameInput.value.trim();
+  const format          = document.querySelector('input[name="format"]:checked').value;
+  const quality         = parseInt(qualitySlider.value, 10);
   
   const namingConfig = {
     enabled: namingEnabled,
@@ -314,6 +350,11 @@ async function start() {
     includeTime: includeTime.checked,
     includeDevice: includeDevice.checked,
     customName: customName,
+  };
+
+  const formatConfig = {
+    format: format,
+    quality: quality,
   };
 
   chrome.storage.local.set({
@@ -326,6 +367,8 @@ async function start() {
     lastIncludeTime:    includeTime.checked,
     lastIncludeDevice:  includeDevice.checked,
     lastCustomName:     customName,
+    lastFormat:         format,
+    lastQuality:        quality,
   });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -335,6 +378,7 @@ async function start() {
     responsive,
     breakpoints,
     namingConfig,
+    formatConfig,
   });
 
   try {
