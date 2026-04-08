@@ -11,6 +11,9 @@ const formatWebp        = document.getElementById('format-webp');
 const qualityControl    = document.getElementById('quality-control');
 const qualitySlider     = document.getElementById('quality-slider');
 const qualityValue      = document.getElementById('quality-value');
+const delayToggle       = document.getElementById('delay-toggle');
+const delayPanel        = document.getElementById('delay-panel');
+const customDelayInput  = document.getElementById('custom-delay-input');
 const responsiveToggle  = document.getElementById('responsive-toggle');
 const devicePanel       = document.getElementById('device-panel');
 const deviceList        = document.getElementById('device-list');
@@ -109,6 +112,10 @@ namingToggle.addEventListener('change', () => {
   namingPanel.style.display = namingToggle.checked ? 'block' : 'none';
 });
 
+delayToggle.addEventListener('change', () => {
+  delayPanel.style.display = delayToggle.checked ? 'block' : 'none';
+});
+
 historyToggle.addEventListener('change', () => {
   historyPanel.style.display = historyToggle.checked ? 'block' : 'none';
   if (historyToggle.checked) {
@@ -128,6 +135,18 @@ formatWebp.addEventListener('change', updateQualityVisibility);
 
 qualitySlider.addEventListener('input', () => {
   qualityValue.textContent = qualitySlider.value;
+});
+
+// Handle custom delay input
+document.querySelectorAll('input[name="delay"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    if (radio.value === 'custom') {
+      customDelayInput.disabled = false;
+      customDelayInput.focus();
+    } else {
+      customDelayInput.disabled = true;
+    }
+  });
 });
 
 responsiveToggle.addEventListener('change', () => {
@@ -292,7 +311,8 @@ chrome.storage.local.get([
   'lastResponsive', 'lastDeviceState', 
   'lastNamingEnabled', 'lastIncludeDomain', 'lastIncludeTitle', 
   'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName',
-  'lastFormat', 'lastQuality'
+  'lastFormat', 'lastQuality', 'lastDelay', 'lastDelayEnabled',
+  'lastDelayMode', 'lastCustomDelay'
 ], (res) => {
   if (res.lastNamingEnabled) {
     namingToggle.checked = true;
@@ -320,6 +340,21 @@ chrome.storage.local.get([
   
   updateQualityVisibility();
 
+  // Set delay toggle and panel
+  if (res.lastDelayEnabled) {
+    delayToggle.checked = true;
+    delayPanel.style.display = 'block';
+  }
+
+  // Set delay mode (default to "0" - None)
+  const delayMode = res.lastDelayMode || '0';
+  const delayRadio = document.getElementById(delayMode === 'custom' ? 'delay-custom' : `delay-${delayMode}`);
+  if (delayRadio) delayRadio.checked = true;
+  
+  // Set custom delay input value and enable/disable
+  if (res.lastCustomDelay) customDelayInput.value = res.lastCustomDelay;
+  customDelayInput.disabled = (delayMode !== 'custom');
+
   if (res.lastResponsive) {
     responsiveToggle.checked = true;
     devicePanel.style.display = 'block';
@@ -342,6 +377,16 @@ async function start() {
   const customName      = customNameInput.value.trim();
   const format          = document.querySelector('input[name="format"]:checked').value;
   const quality         = parseInt(qualitySlider.value, 10);
+  
+  // Get delay value (handle custom input)
+  const selectedDelay   = document.querySelector('input[name="delay"]:checked');
+  let delay = 0;
+  if (selectedDelay.value === 'custom') {
+    const customValue = parseInt(customDelayInput.value, 10);
+    delay = (customValue && customValue > 0) ? customValue : 0;
+  } else {
+    delay = parseInt(selectedDelay.value, 10);
+  }
   
   const namingConfig = {
     enabled: namingEnabled,
@@ -369,6 +414,10 @@ async function start() {
     lastCustomName:     customName,
     lastFormat:         format,
     lastQuality:        quality,
+    lastDelay:          delay,
+    lastDelayEnabled:   delayToggle.checked,
+    lastDelayMode:      selectedDelay.value,
+    lastCustomDelay:    customDelayInput.value,
   });
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -379,6 +428,7 @@ async function start() {
     breakpoints,
     namingConfig,
     formatConfig,
+    delay,
   });
 
   try {

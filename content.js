@@ -230,10 +230,23 @@ async function startResponsiveCapture(breakpoints, namingConfig, formatConfig) {
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === 'startCapture') {
-    if (msg.responsive && msg.breakpoints && msg.breakpoints.length > 0) {
-      startResponsiveCapture(msg.breakpoints, msg.namingConfig, msg.formatConfig);
+    const delay = msg.delay || 0;
+    
+    // If delay is set, wait before capturing
+    if (delay > 0) {
+      setTimeout(() => {
+        if (msg.responsive && msg.breakpoints && msg.breakpoints.length > 0) {
+          startResponsiveCapture(msg.breakpoints, msg.namingConfig, msg.formatConfig);
+        } else {
+          startFullPageCapture(msg.namingConfig, msg.formatConfig);
+        }
+      }, delay * 1000); // Convert seconds to milliseconds
     } else {
-      startFullPageCapture(msg.namingConfig, msg.formatConfig);
+      if (msg.responsive && msg.breakpoints && msg.breakpoints.length > 0) {
+        startResponsiveCapture(msg.breakpoints, msg.namingConfig, msg.formatConfig);
+      } else {
+        startFullPageCapture(msg.namingConfig, msg.formatConfig);
+      }
     }
   }
 });

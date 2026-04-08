@@ -32,7 +32,7 @@ chrome.commands.onCommand.addListener(async (command) => {
       'lastResponsive', 'lastBreakpoints',
       'lastNamingEnabled', 'lastIncludeDomain', 'lastIncludeTitle', 
       'lastIncludeTime', 'lastIncludeDevice', 'lastCustomName',
-      'lastFormat', 'lastQuality'
+      'lastFormat', 'lastQuality', 'lastDelay'
     ], (res) => {
       const responsive  = res.lastResponsive || false;
       const breakpoints = res.lastBreakpoints || null;
@@ -51,12 +51,15 @@ chrome.commands.onCommand.addListener(async (command) => {
         quality: res.lastQuality || 92,
       };
 
+      const delay = res.lastDelay || 0;
+
       chrome.tabs.sendMessage(tab.id, {
         action: 'startCapture',
         responsive,
         breakpoints,
         namingConfig,
         formatConfig,
+        delay,
       });
     });
   }

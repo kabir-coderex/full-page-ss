@@ -54,6 +54,37 @@
 
   <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
     <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
+      <input type="checkbox" id="delay-toggle" /> Capture Delay
+    </label>
+    <div id="delay-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-0" value="0" checked /> None
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-3" value="3" /> 3s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-5" value="5" /> 5s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-10" value="10" /> 10s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-custom" value="custom" /> Custom:
+        </label>
+      </div>
+      <div style="margin-top:6px;">
+        <input type="number" id="custom-delay-input" min="1" max="60" placeholder="seconds" style="width:80px; font-size:11px; padding:3px 5px;" disabled />
+      </div>
+      <div style="font-size:10px; color:#666; margin-top:6px;">
+        Useful for hover menus, dropdowns, tooltips
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
       <input type="checkbox" id="responsive-toggle" /> Responsive capture
     </label>
     <div id="device-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
