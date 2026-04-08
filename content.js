@@ -8,7 +8,7 @@ async function captureVisible() {
   });
 }
 
-async function startFullPageCapture(name) {
+async function startFullPageCapture(name, suffix) {
   const style = document.createElement('style');
   style.innerHTML = `
     #wpadminbar { display: none !important; }
@@ -59,10 +59,25 @@ async function startFullPageCapture(name) {
 
   const finalImage = canvas.toDataURL('image/png');
 
+  const width = window.innerWidth;
+  let device;
+  if (width > 991) {
+    device = 'desktop';
+  } else if (width > 575) {
+    device = 'tablet';
+  } else {
+    device = 'mobile';
+  }
+
+  const parts = [name];
+  if (suffix) parts.push(suffix);
+  parts.push(device);
+  const filename = parts.join('-') + '.png';
+
   chrome.runtime.sendMessage({
     action: 'download',
     url: finalImage,
-    filename: `${name}-checkout-full.png`
+    filename
   });
 
   window.scrollTo(0, 0);
@@ -70,6 +85,6 @@ async function startFullPageCapture(name) {
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === 'startCapture') {
-    startFullPageCapture(msg.name);
+    startFullPageCapture(msg.name, msg.suffix);
   }
 });
