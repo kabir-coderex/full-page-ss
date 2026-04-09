@@ -382,6 +382,8 @@ function updateUploadOptionsState(hasApiKey) {
   actionUpload.disabled = !hasApiKey;
   actionUploadCopy.disabled = !hasApiKey;
   
+  const uploadHint = document.getElementById('upload-api-hint');
+
   if (hasApiKey) {
     labelUpload.style.opacity = '1';
     labelUpload.style.cursor = 'pointer';
@@ -389,14 +391,16 @@ function updateUploadOptionsState(hasApiKey) {
     labelUploadCopy.style.cursor = 'pointer';
     labelUpload.title = '';
     labelUploadCopy.title = '';
+    if (uploadHint) uploadHint.style.display = 'none';
   } else {
     labelUpload.style.opacity = '0.4';
     labelUpload.style.cursor = 'not-allowed';
     labelUploadCopy.style.opacity = '0.4';
     labelUploadCopy.style.cursor = 'not-allowed';
-    labelUpload.title = 'Configure ImgBB API key in Settings first';
-    labelUploadCopy.title = 'Configure ImgBB API key in Settings first';
-    
+    labelUpload.title = 'Configure ImgBB API key in Advanced Settings first';
+    labelUploadCopy.title = 'Configure ImgBB API key in Advanced Settings first';
+    if (uploadHint) uploadHint.style.display = 'block';
+
     // If either upload option is currently selected, switch to download
     if (actionUpload.checked || actionUploadCopy.checked) {
       document.getElementById('action-download').checked = true;

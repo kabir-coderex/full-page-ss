@@ -94,6 +94,75 @@
       margin-bottom: 6px;
     }
 
+    /* ── Segmented controls (mode / action — low visual weight) ─────────────── */
+    .seg-group {
+      display: grid;
+      gap: 1px;
+      background: var(--border);   /* gap color = grid lines */
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .seg-group.cols-2 { grid-template-columns: 1fr 1fr; }
+    .seg-group.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .seg-item { position: relative; }
+    .seg-item input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0; height: 0;
+    }
+    .seg-item label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 6px;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--text-3);
+      background: var(--bg);
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.3;
+      transition: background 0.08s, color 0.08s;
+      user-select: none;
+    }
+    .seg-item label:hover {
+      background: var(--surface);
+      color: var(--text-2);
+    }
+    .seg-item input[type="radio"]:checked + label {
+      background: var(--surface-hover);
+      color: var(--text);
+      font-weight: 500;
+    }
+    .seg-item input[type="radio"]:disabled + label {
+      color: #c4c4c4;
+      cursor: not-allowed;
+      background: #fafafa;
+    }
+
+    /* Upload wrapper — JS sets opacity/cursor; propagate cursor to inner label */
+    #label-upload[style*="not-allowed"] label,
+    #label-upload-copy[style*="not-allowed"] label { cursor: not-allowed; }
+
+    /* ── Upload hint (shown when no API key) ─────────────────────────────────── */
+    .upload-hint {
+      display: none;
+      margin-top: 6px;
+      margin-bottom: 2px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      color: var(--text-3);
+      line-height: 1.55;
+    }
+    .upload-hint strong { color: var(--text-2); font-weight: 500; }
+
     /* ── Radio cards ─────────────────────────────────────────────────────────── */
     .card-grid {
       display: grid;
@@ -292,7 +361,7 @@
     #start {
       display: block;
       width: 100%;
-      padding: 10px 16px;
+      padding: 11px 16px;
       background: var(--accent);
       color: var(--accent-fg);
       border: none;
@@ -303,7 +372,7 @@
       cursor: pointer;
       letter-spacing: -0.01em;
       transition: opacity 0.1s;
-      margin-top: 12px;
+      margin-top: 16px;
     }
     #start:hover   { opacity: 0.88; }
     #start:active  { opacity: 0.72; }
@@ -519,20 +588,20 @@
 
   <!-- Capture mode -->
   <div class="sec-label">Capture mode</div>
-  <div class="card-grid cols-2">
-    <div class="r-card">
+  <div class="seg-group cols-2">
+    <div class="seg-item">
       <input type="radio" name="captureMode" id="mode-full" value="full" checked />
       <label for="mode-full">Full Page</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="captureMode" id="mode-visible" value="visible" />
       <label for="mode-visible">Visible Area</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="captureMode" id="mode-area" value="area" />
       <label for="mode-area">Select Area</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="captureMode" id="mode-element" value="element" />
       <label for="mode-element">Select Element</label>
     </div>
@@ -540,37 +609,38 @@
 
   <!-- Output action -->
   <div class="sec-label">Output action</div>
-  <div class="card-grid cols-2">
-    <div class="r-card">
+  <div class="seg-group cols-2">
+    <div class="seg-item">
       <input type="radio" name="action" id="action-download" value="download" checked />
       <label for="action-download">Download</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="action" id="action-clipboard" value="clipboard" />
       <label for="action-clipboard">Copy to Clipboard</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="action" id="action-both" value="both" />
       <label for="action-both">Download + Copy</label>
     </div>
-    <div class="r-card">
+    <div class="seg-item">
       <input type="radio" name="action" id="action-edit" value="edit" />
       <label for="action-edit">Open in Editor</label>
     </div>
   </div>
-  <div class="card-grid cols-2" style="margin-bottom: 4px;">
-    <div class="r-card" id="label-upload">
+  <div class="seg-group cols-2" style="margin-bottom: 0;">
+    <div class="seg-item" id="label-upload">
       <input type="radio" name="action" id="action-upload" value="upload" />
       <label for="action-upload">Upload to ImgBB</label>
     </div>
-    <div class="r-card" id="label-upload-copy">
+    <div class="seg-item" id="label-upload-copy">
       <input type="radio" name="action" id="action-upload-copy" value="upload_copy" />
       <label for="action-upload-copy">Upload &amp; Copy URL</label>
     </div>
   </div>
-  <p class="warning-text" id="upload-api-hint" style="display:none; margin-bottom: 8px;">
-    API key required — configure in Settings below.
-  </p>
+  <div class="upload-hint" id="upload-api-hint">
+    These options require an ImgBB API key.<br>
+    Open <strong>Advanced Settings</strong> below and add your key to enable them.
+  </div>
 
   <!-- Status indicator -->
   <div id="status-indicator"><div id="status-text">Capturing...</div></div>
