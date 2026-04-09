@@ -47,14 +47,10 @@ const PREDEFINED_DEVICES = [
   { label: 'mobile-s', name: 'Mobile S', width: 375,  defaultChecked: false },
 ];
 
-const ROW_STYLE  = 'display:flex; align-items:center; gap:4px; padding:2px 0;';
-const NAME_STYLE = 'flex:1; font-size:11px;';
-const NUM_STYLE  = 'width:60px; font-size:11px; text-align:right; padding:1px 3px; box-sizing:border-box;';
-
 // Build predefined rows
 PREDEFINED_DEVICES.forEach(device => {
   const row = document.createElement('div');
-  row.style.cssText = ROW_STYLE;
+  row.className = 'dev-row';
 
   const cb = document.createElement('input');
   cb.type = 'checkbox';
@@ -63,7 +59,7 @@ PREDEFINED_DEVICES.forEach(device => {
 
   const nameSpan = document.createElement('span');
   nameSpan.textContent = device.name;
-  nameSpan.style.cssText = NAME_STYLE;
+  nameSpan.className = 'dev-name';
 
   const wi = document.createElement('input');
   wi.type = 'number';
@@ -71,7 +67,7 @@ PREDEFINED_DEVICES.forEach(device => {
   wi.max = '7680';
   wi.value = device.width;
   wi.dataset.label = device.label;
-  wi.style.cssText = NUM_STYLE;
+  wi.className = 'dev-width';
 
   row.appendChild(cb);
   row.appendChild(nameSpan);
@@ -85,7 +81,7 @@ let customCount = 0;
 function addCustomRow(width = '') {
   customCount++;
   const row = document.createElement('div');
-  row.style.cssText = ROW_STYLE;
+  row.className = 'dev-row';
 
   const cb = document.createElement('input');
   cb.type = 'checkbox';
@@ -94,7 +90,7 @@ function addCustomRow(width = '') {
 
   const nameSpan = document.createElement('span');
   nameSpan.textContent = 'Custom';
-  nameSpan.style.cssText = NAME_STYLE;
+  nameSpan.className = 'dev-name';
 
   const wi = document.createElement('input');
   wi.type = 'number';
@@ -103,12 +99,12 @@ function addCustomRow(width = '') {
   wi.placeholder = 'px';
   if (width) wi.value = width;
   wi.dataset.custom = 'true';
-  wi.style.cssText = NUM_STYLE;
+  wi.className = 'dev-width';
 
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.textContent = 'x';
-  removeBtn.style.cssText = 'border:none; background:none; cursor:pointer; color:#999; font-size:14px; padding:0 2px; line-height:1;';
+  removeBtn.className = 'dev-remove';
   removeBtn.addEventListener('click', () => row.remove());
 
   row.appendChild(cb);
@@ -144,16 +140,16 @@ saveApiKeyBtn.addEventListener('click', () => {
   const apiKey = imgbbApiKeyInput.value.trim();
   
   if (!apiKey) {
-    apiKeyStatus.textContent = '❌ Please enter an API key';
-    apiKeyStatus.style.color = '#f44336';
+    apiKeyStatus.textContent = 'Please enter an API key';
+    apiKeyStatus.style.color = '#b91c1c';
     apiKeyStatus.style.display = 'block';
     return;
   }
   
   // Save to storage
   chrome.storage.local.set({ imgbbApiKey: apiKey }, () => {
-    apiKeyStatus.textContent = '✅ API key saved successfully!';
-    apiKeyStatus.style.color = '#4CAF50';
+    apiKeyStatus.textContent = 'API key saved';
+    apiKeyStatus.style.color = '#15803d';
     apiKeyStatus.style.display = 'block';
     
     // Enable upload options
@@ -179,8 +175,8 @@ clearApiKeyBtn.addEventListener('click', () => {
   // Clear from storage
   chrome.storage.local.remove('imgbbApiKey', () => {
     imgbbApiKeyInput.value = '';
-    apiKeyStatus.textContent = '✅ API key cleared successfully!';
-    apiKeyStatus.style.color = '#4CAF50';
+    apiKeyStatus.textContent = 'API key cleared';
+    apiKeyStatus.style.color = '#15803d';
     apiKeyStatus.style.display = 'block';
     
     // Disable upload options
@@ -321,7 +317,7 @@ function loadHistory() {
     const history = res.screenshotHistory || [];
     
     if (history.length === 0) {
-      historyList.innerHTML = '<div style="color:#999; text-align:center; padding:10px 0;">No history yet</div>';
+      historyList.innerHTML = '<div class="hist-empty">No history yet</div>';
       return;
     }
 
@@ -329,14 +325,14 @@ function loadHistory() {
     history.sort((a, b) => b.timestamp - a.timestamp);
 
     historyList.innerHTML = history.map((item, index) => `
-      <div style="border-bottom:1px solid #eee; padding:6px 0; display:flex; flex-direction:column; gap:4px;">
-        <div style="font-weight:500; word-break:break-word;">${item.filename}</div>
-        <div style="font-size:10px; color:#666; word-break:break-all;">${item.url}</div>
-        <div style="display:flex; gap:6px; align-items:center; margin-top:2px;">
-          <span style="font-size:10px; color:#999;">${formatDate(item.timestamp)}</span>
-          <button class="copy-filename" data-index="${index}" style="font-size:9px; padding:2px 6px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:2px;">Copy Name</button>
-          <button class="open-url" data-index="${index}" style="font-size:9px; padding:2px 6px; cursor:pointer; background:#2196F3; color:white; border:none; border-radius:2px;">Open Page</button>
-          <button class="delete-item" data-index="${index}" style="font-size:9px; padding:2px 6px; cursor:pointer; background:#f44336; color:white; border:none; border-radius:2px;">Delete</button>
+      <div class="hist-item">
+        <div class="hist-name">${item.filename}</div>
+        <div class="hist-url">${item.url}</div>
+        <div class="hist-foot">
+          <span class="hist-time">${formatDate(item.timestamp)}</span>
+          <button class="copy-filename hist-btn" data-index="${index}">Copy Name</button>
+          <button class="open-url hist-btn" data-index="${index}">Open Page</button>
+          <button class="delete-item hist-btn hist-btn-danger" data-index="${index}">Delete</button>
         </div>
       </div>
     `).join('');
@@ -386,6 +382,8 @@ function updateUploadOptionsState(hasApiKey) {
   actionUpload.disabled = !hasApiKey;
   actionUploadCopy.disabled = !hasApiKey;
   
+  const uploadHint = document.getElementById('upload-api-hint');
+
   if (hasApiKey) {
     labelUpload.style.opacity = '1';
     labelUpload.style.cursor = 'pointer';
@@ -393,14 +391,16 @@ function updateUploadOptionsState(hasApiKey) {
     labelUploadCopy.style.cursor = 'pointer';
     labelUpload.title = '';
     labelUploadCopy.title = '';
+    if (uploadHint) uploadHint.style.display = 'none';
   } else {
     labelUpload.style.opacity = '0.4';
     labelUpload.style.cursor = 'not-allowed';
     labelUploadCopy.style.opacity = '0.4';
     labelUploadCopy.style.cursor = 'not-allowed';
-    labelUpload.title = 'Configure ImgBB API key in Settings first';
-    labelUploadCopy.title = 'Configure ImgBB API key in Settings first';
-    
+    labelUpload.title = 'Configure ImgBB API key in Advanced Settings first';
+    labelUploadCopy.title = 'Configure ImgBB API key in Advanced Settings first';
+    if (uploadHint) uploadHint.style.display = 'block';
+
     // If either upload option is currently selected, switch to download
     if (actionUpload.checked || actionUploadCopy.checked) {
       document.getElementById('action-download').checked = true;
@@ -659,7 +659,7 @@ async function start() {
     
     if (!response || !response.success) {
       statusIndicator.style.background = '#f44336';
-      statusText.textContent = '❌ ' + (response?.error || 'Unknown error');
+      statusText.textContent = 'Error: ' + (response?.error || 'Unknown error');
       setTimeout(() => {
         statusIndicator.style.display = 'none';
         startButton.disabled = false;
@@ -683,8 +683,8 @@ async function start() {
         
         chrome.tabs.create({ url: editorUrl });
         
-        statusIndicator.style.background = '#4CAF50';
-        statusText.textContent = '✅ Opening editor...';
+        statusIndicator.style.background = '#15803d';
+        statusText.textContent = 'Opening editor...';
         
         setTimeout(() => {
           statusIndicator.style.display = 'none';
@@ -696,7 +696,7 @@ async function start() {
       
       // Handle upload to ImgBB
       if (action === 'upload' || action === 'upload_copy') {
-        statusText.textContent = '☁️ Uploading to ImgBB...';
+        statusText.textContent = 'Uploading to ImgBB...';
         
         try {
           const uploadResponse = await new Promise((resolve) => {
@@ -716,16 +716,16 @@ async function start() {
           if (action === 'upload_copy') {
             try {
               await navigator.clipboard.writeText(imageUrl);
-              statusIndicator.style.background = '#4CAF50';
-              statusText.textContent = '✅ Uploaded & URL copied!';
+              statusIndicator.style.background = '#15803d';
+              statusText.textContent = 'Uploaded — URL copied to clipboard';
             } catch (clipErr) {
               console.warn('Clipboard write failed:', clipErr);
-              statusIndicator.style.background = '#ff9800';
-              statusText.textContent = '✅ Uploaded (clipboard failed)';
+              statusIndicator.style.background = '#92400e';
+              statusText.textContent = 'Uploaded (clipboard unavailable)';
             }
           } else {
-            statusIndicator.style.background = '#4CAF50';
-            statusText.textContent = '✅ Uploaded successfully!';
+            statusIndicator.style.background = '#15803d';
+            statusText.textContent = 'Uploaded successfully';
           }
           
           // Open image in new tab
@@ -752,8 +752,8 @@ async function start() {
           
         } catch (uploadErr) {
           console.error('Upload error:', uploadErr);
-          statusIndicator.style.background = '#f44336';
-          statusText.textContent = '❌ Upload failed: ' + uploadErr.message;
+          statusIndicator.style.background = '#b91c1c';
+          statusText.textContent = 'Upload failed: ' + uploadErr.message;
           
           setTimeout(() => {
             statusIndicator.style.display = 'none';
@@ -824,10 +824,10 @@ async function start() {
     }
     
     // Success!
-    statusIndicator.style.background = '#4CAF50';
-    statusText.textContent = action === 'clipboard' || action === 'both' 
-      ? '✅ Copied to clipboard!' 
-      : '✅ Downloaded successfully!';
+    statusIndicator.style.background = '#15803d';
+    statusText.textContent = action === 'clipboard' || action === 'both'
+      ? 'Copied to clipboard'
+      : 'Downloaded successfully';
     
     setTimeout(() => {
       statusIndicator.style.display = 'none';
@@ -836,8 +836,8 @@ async function start() {
     
   } catch (error) {
     console.error('Capture error:', error);
-    statusIndicator.style.background = '#f44336';
-    statusText.textContent = '❌ Failed: ' + error.message;
+    statusIndicator.style.background = '#b91c1c';
+    statusText.textContent = 'Failed: ' + error.message;
     setTimeout(() => {
       statusIndicator.style.display = 'none';
       startButton.disabled = false;
