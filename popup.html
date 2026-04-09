@@ -1,8 +1,144 @@
 <!DOCTYPE html>
 <html>
 <body style="font-family:sans-serif; padding:10px; width:250px;">
-  <input id="name" placeholder="Enter name" style="width:100%; box-sizing:border-box;" autofocus />
-  <input id="suffix" placeholder="Enter suffix (optional)" style="width:100%; box-sizing:border-box; margin-top:6px;" />
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
+      <input type="checkbox" id="naming-toggle" /> Advanced naming
+    </label>
+    <div id="naming-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
+      <div style="margin-bottom:6px;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
+          <input type="checkbox" id="include-domain" checked /> Domain
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
+          <input type="checkbox" id="include-title" checked /> Title
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
+          <input type="checkbox" id="include-time" checked /> Time
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
+          <input type="checkbox" id="include-device" /> Device
+        </label>
+      </div>
+      <input id="custom-name" placeholder="Custom name (optional)" style="width:100%; box-sizing:border-box; font-size:11px; padding:4px;" />
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
+      Capture Mode
+    </div>
+    <div style="padding:6px 8px;">
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="captureMode" id="mode-full" value="full" checked /> Full Page
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="captureMode" id="mode-visible" value="visible" /> Visible Area
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="captureMode" id="mode-area" value="area" /> Select Area
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="captureMode" id="mode-element" value="element" /> Select Element
+        </label>
+      </div>
+      <div style="font-size:10px; color:#666; margin-top:6px;">
+        Choose what to capture
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
+      Format & Quality
+    </div>
+    <div style="padding:6px 8px;">
+      <div style="display:flex; gap:8px; margin-bottom:6px;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-png" value="png" checked /> PNG
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-jpeg" value="jpeg" /> JPEG
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="format" id="format-webp" value="webp" /> WebP
+        </label>
+      </div>
+      <div id="quality-control" style="display:none;">
+        <label style="font-size:11px; display:block; margin-bottom:4px;">
+          Quality: <span id="quality-value">92</span>%
+        </label>
+        <input type="range" id="quality-slider" min="1" max="100" value="92" style="width:100%; cursor:pointer;" />
+        <div style="font-size:10px; color:#666; margin-top:4px;">
+          Higher quality = larger file size
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
+      <input type="checkbox" id="delay-toggle" /> Capture Delay
+    </label>
+    <div id="delay-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-0" value="0" checked /> None
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-3" value="3" /> 3s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-5" value="5" /> 5s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-10" value="10" /> 10s
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="delay" id="delay-custom" value="custom" /> Custom:
+        </label>
+      </div>
+      <div style="margin-top:6px;">
+        <input type="number" id="custom-delay-input" min="1" max="60" placeholder="seconds" style="width:80px; font-size:11px; padding:3px 5px;" disabled />
+      </div>
+      <div style="font-size:10px; color:#666; margin-top:6px;">
+        Useful for hover menus, dropdowns, tooltips
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
+      Output Action
+    </div>
+    <div style="padding:6px 8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-download" value="download" checked /> Download
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-clipboard" value="clipboard" /> Clipboard
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-both" value="both" /> Both
+        </label>
+        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-edit" value="edit" /> Edit
+        </label>
+        <label id="label-upload" style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-upload" value="upload" /> Upload to ImgBB
+        </label>
+        <label id="label-upload-copy" style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="radio" name="action" id="action-upload-copy" value="upload_copy" /> Upload & Copy URL
+        </label>
+      </div>
+      <div style="font-size:10px; color:#666; margin-top:6px;">
+        Download, copy to clipboard, edit with annotations, or upload to ImgBB<br>
+        <span style="color:#ff9800;">Upload options require API key (configure in Settings)</span>
+      </div>
+    </div>
+  </div>
 
   <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
     <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
@@ -16,6 +152,45 @@
   </div>
 
   <button id="start" style="margin-top:8px; width:100%;">Capture</button>
+  
+  <div id="status-indicator" style="display:none; margin-top:8px; padding:8px; background:#2196F3; color:white; border-radius:4px; text-align:center; font-size:11px;">
+    <div id="status-text">Capturing...</div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
+      <input type="checkbox" id="history-toggle" /> History
+    </label>
+    <div id="history-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px; max-height:300px; overflow-y:auto;">
+      <div id="history-list" style="font-size:11px;">
+        <div style="color:#999; text-align:center; padding:10px 0;">No history yet</div>
+      </div>
+      <button id="clear-history" type="button" style="margin-top:6px; width:100%; font-size:11px; padding:3px 0; cursor:pointer; background:#f44336; color:white; border:none; border-radius:3px;">Clear History</button>
+    </div>
+  </div>
+
+  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
+    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
+      <input type="checkbox" id="settings-toggle" /> Settings
+    </label>
+    <div id="settings-panel" style="display:none; border-top:1px solid #ccc; padding:8px;">
+      <div style="margin-bottom:8px;">
+        <label style="display:block; font-weight:600; font-size:11px; margin-bottom:4px;">
+          ImgBB API Key
+          <span style="font-weight:normal; color:#666;">(required for upload)</span>
+        </label>
+        <div style="display:flex; gap:4px;">
+          <input type="text" id="imgbb-api-key" placeholder="Enter your ImgBB API key" style="flex:1; font-size:11px; padding:4px; border:1px solid #ccc; border-radius:3px;" />
+          <button id="save-api-key" type="button" style="font-size:11px; padding:4px 12px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:3px; white-space:nowrap;">Save</button>
+          <button id="clear-api-key" type="button" style="font-size:11px; padding:4px 12px; cursor:pointer; background:#f44336; color:white; border:none; border-radius:3px; white-space:nowrap;">Clear</button>
+        </div>
+        <div id="api-key-status" style="font-size:10px; margin-top:4px; display:none;"></div>
+        <div style="font-size:10px; color:#666; margin-top:6px;">
+          Get your free API key from <a href="https://api.imgbb.com/" target="_blank" style="color:#2196F3;">api.imgbb.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>
