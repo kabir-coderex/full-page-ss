@@ -1,197 +1,757 @@
 <!DOCTYPE html>
 <html>
-<body style="font-family:sans-serif; padding:10px; width:250px;">
-  <button id="start" style="margin-top:8px; width:100%;">Capture</button>
-  
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
-      <input type="checkbox" id="naming-toggle" /> Advanced naming
-    </label>
-    <div id="naming-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
-      <div style="margin-bottom:6px;">
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
-          <input type="checkbox" id="include-domain" checked /> Domain
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
-          <input type="checkbox" id="include-title" checked /> Title
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
-          <input type="checkbox" id="include-time" checked /> Time
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px 0;">
-          <input type="checkbox" id="include-device" /> Device
-        </label>
-      </div>
-      <input id="custom-name" placeholder="Custom name (optional)" style="width:100%; box-sizing:border-box; font-size:11px; padding:4px;" />
+<head>
+  <meta charset="utf-8">
+  <style>
+    /* ── Design tokens ───────────────────────────────────────────────────────── */
+    :root {
+      --bg:            #ffffff;
+      --surface:       #f5f5f5;
+      --surface-hover: #eeeeee;
+      --border:        #e2e2e2;
+      --border-mid:    #c4c4c4;
+      --text:          #111111;
+      --text-2:        #444444;
+      --text-3:        #6b7280;
+      --accent:        #111111;
+      --accent-fg:     #ffffff;
+      --danger:        #b91c1c;
+      --danger-bg:     #fef2f2;
+      --danger-border: #fecaca;
+      --success:       #15803d;
+      --warning:       #92400e;
+      --status-bg:     #1e40af;
+      --r-sm:          5px;
+      --r-md:          7px;
+      --r-lg:          9px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      --mono: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      width: 340px;
+      padding: 14px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .header-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .header-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 1px;
+    }
+
+    /* ── Filename preview ────────────────────────────────────────────────────── */
+    .preview-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 8px 11px;
+      margin-bottom: 13px;
+    }
+    .preview-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+      margin-bottom: 3px;
+    }
+    .preview-value {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-2);
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    /* ── Section label ───────────────────────────────────────────────────────── */
+    .sec-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.055em;
+      margin-bottom: 6px;
+    }
+
+    /* ── Radio cards ─────────────────────────────────────────────────────────── */
+    .card-grid {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr;}
+    .card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .r-card { position: relative; }
+    .r-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0; height: 0;
+    }
+    .r-card label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.3;
+      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      user-select: none;
+    }
+    .r-card label:hover {
+      background: var(--surface);
+      border-color: var(--border-mid);
+    }
+    .r-card input[type="radio"]:checked + label {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
+    }
+    .r-card input[type="radio"]:disabled + label {
+      opacity: 1;
+      background: #f1f1f1;
+      color: #9ca3af;
+      border: 1px dashed var(--border-mid);
+      cursor: not-allowed;
+    }
+    /* Upload cards: JS sets cursor:not-allowed on wrapper — propagate to inner label */
+    #label-upload[style*="not-allowed"] label,
+    #label-upload-copy[style*="not-allowed"] label { cursor: not-allowed; }
+
+    /* ── Checkboxes / check rows ─────────────────────────────────────────────── */
+    .check-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 8px;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 0;
+    }
+    .check-row input[type="checkbox"] {
+      width: 13px; height: 13px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .check-row label {
+      font-size: 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* ── Collapsible ─────────────────────────────────────────────────────────── */
+    .collapsible {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .collapsible-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--surface);
+      cursor: pointer;
+      user-select: none;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      transition: background 0.08s;
+    }
+    .collapsible-head:hover  { background: var(--surface-hover); }
+    .collapsible-head.open   { background: var(--surface-hover); }
+    .chevron {
+      color: var(--text-3);
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    .collapsible-head.open .chevron { transform: rotate(180deg); }
+    .collapsible-body {
+      display: none;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .collapsible-body.open { display: block; }
+
+    /* ── Section header row (label + inline toggle) ──────────────────────────── */
+    .sec-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .sec-row .sec-label { margin-bottom: 0; }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+    .toggle-label input[type="checkbox"] {
+      width: 12px; height: 12px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── Inner divider ───────────────────────────────────────────────────────── */
+    .inner-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 10px 0;
+    }
+
+    /* ── Inputs ──────────────────────────────────────────────────────────────── */
+    .inp {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.1s;
+    }
+    .inp:focus { border-color: var(--border-mid); }
+    .inp::placeholder { color: var(--text-3); }
+
+    .inp-num {
+      padding: 5px 7px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      text-align: right;
+      outline: none;
+    }
+    .inp-num:focus    { border-color: var(--border-mid); }
+    .inp-num:disabled { opacity: 0.45; cursor: not-allowed; background: var(--surface); }
+
+    /* ── Range ───────────────────────────────────────────────────────────────── */
+    .range-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .range-wrap input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 3px;
+    }
+    .range-val {
+      font-size: 11px;
+      color: var(--text-3);
+      width: 34px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Primary capture button ──────────────────────────────────────────────── */
+    #start {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: var(--r-md);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      letter-spacing: -0.01em;
+      transition: opacity 0.1s;
+      margin-top: 12px;
+    }
+    #start:hover   { opacity: 0.88; }
+    #start:active  { opacity: 0.72; }
+    #start:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* ── Utility buttons ─────────────────────────────────────────────────────── */
+    .btn {
+      padding: 5px 10px;
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: opacity 0.1s, background 0.08s;
+      border: 1px solid transparent;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .btn-dark {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+    .btn-dark:hover { opacity: 0.82; }
+    .btn-outline-danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .btn-outline-danger:hover    { background: var(--danger-bg); }
+    .btn-outline-danger:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    .btn-add {
+      display: block;
+      width: 100%;
+      margin-top: 7px;
+      padding: 6px;
+      background: transparent;
+      border: 1px dashed var(--border-mid);
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      color: var(--text-3);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: border-color 0.1s, color 0.1s, background 0.08s;
+    }
+    .btn-add:hover {
+      border-color: var(--border-mid);
+      color: var(--text-2);
+      background: var(--surface);
+    }
+
+    /* ── Status indicator ────────────────────────────────────────────────────── */
+    #status-indicator {
+      display: none;
+      padding: 9px 12px;
+      border-radius: var(--r-md);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 10px;
+      background: var(--status-bg);
+      color: white;
+    }
+
+    /* ── Hint / warning text ─────────────────────────────────────────────────── */
+    .hint {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+    .hint a { color: var(--text-2); }
+    .warning-text {
+      font-size: 10.5px;
+      color: var(--warning);
+      margin-top: 6px;
+    }
+
+    /* ── Device rows (built dynamically by popup.js) ─────────────────────────── */
+    .dev-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 0;
+    }
+    .dev-row input[type="checkbox"] {
+      width: 13px; height: 13px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .dev-name {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .dev-width {
+      width: 60px;
+      font-size: 11px;
+      text-align: right;
+      padding: 3px 6px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--bg);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .dev-remove {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-3);
+      font-size: 15px;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .dev-remove:hover { color: var(--danger); }
+
+    /* ── API key status ──────────────────────────────────────────────────────── */
+    #api-key-status {
+      font-size: 11px;
+      margin-top: 5px;
+    }
+
+    /* ── History items (rendered by popup.js) ────────────────────────────────── */
+    .hist-item {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .hist-item:last-child { border-bottom: none; }
+    .hist-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      word-break: break-all;
+      margin-bottom: 2px;
+    }
+    .hist-url {
+      font-size: 10px;
+      color: var(--text-3);
+      word-break: break-all;
+      margin-bottom: 5px;
+    }
+    .hist-foot {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .hist-time {
+      font-size: 10px;
+      color: var(--text-3);
+      flex: 1;
+    }
+    .hist-btn {
+      padding: 2px 7px;
+      font-size: 10px;
+      font-weight: 500;
+      font-family: var(--font);
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-2);
+      transition: background 0.08s;
+    }
+    .hist-btn:hover { background: var(--surface); }
+    .hist-btn-danger {
+      color: var(--danger);
+      border-color: var(--danger-border);
+    }
+    .hist-btn-danger:hover { background: var(--danger-bg); }
+
+    .hist-empty {
+      text-align: center;
+      padding: 16px 0;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    #clear-history {
+      display: block;
+      width: 100%;
+      margin-top: 8px;
+      padding: 6px;
+      background: transparent;
+      border: 1px solid var(--danger-border);
+      border-radius: var(--r-sm);
+      font-size: 11px;
+      color: var(--danger);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background 0.08s;
+    }
+    #clear-history:hover { background: var(--danger-bg); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-name">Screenshot</div>
+      <div class="header-sub">Full-page capture tool</div>
     </div>
   </div>
 
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
-      Capture Mode
+  <!-- Filename preview -->
+  <div class="preview-box">
+    <div class="preview-label">Output filename</div>
+    <div class="preview-value" id="filename-preview-value">screenshot.png</div>
+  </div>
+
+  <!-- Capture mode -->
+  <div class="sec-label">Capture mode</div>
+  <div class="card-grid cols-2">
+    <div class="r-card">
+      <input type="radio" name="captureMode" id="mode-full" value="full" checked />
+      <label for="mode-full">Full Page</label>
     </div>
-    <div style="padding:6px 8px;">
-      <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="captureMode" id="mode-full" value="full" checked /> Full Page
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="captureMode" id="mode-visible" value="visible" /> Visible Area
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="captureMode" id="mode-area" value="area" /> Select Area
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="captureMode" id="mode-element" value="element" /> Select Element
-        </label>
-      </div>
-      <div style="font-size:10px; color:#666; margin-top:6px;">
-        Choose what to capture
-      </div>
+    <div class="r-card">
+      <input type="radio" name="captureMode" id="mode-visible" value="visible" />
+      <label for="mode-visible">Visible Area</label>
+    </div>
+    <div class="r-card">
+      <input type="radio" name="captureMode" id="mode-area" value="area" />
+      <label for="mode-area">Select Area</label>
+    </div>
+    <div class="r-card">
+      <input type="radio" name="captureMode" id="mode-element" value="element" />
+      <label for="mode-element">Select Element</label>
     </div>
   </div>
 
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
-      Format & Quality
+  <!-- Output action -->
+  <div class="sec-label">Output action</div>
+  <div class="card-grid cols-2">
+    <div class="r-card">
+      <input type="radio" name="action" id="action-download" value="download" checked />
+      <label for="action-download">Download</label>
     </div>
-    <div style="padding:6px 8px;">
-      <div style="display:flex; gap:8px; margin-bottom:6px;">
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="format" id="format-png" value="png" checked /> PNG
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="format" id="format-jpeg" value="jpeg" /> JPEG
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="format" id="format-webp" value="webp" /> WebP
-        </label>
-      </div>
-      <div id="quality-control" style="display:none;">
-        <label style="font-size:11px; display:block; margin-bottom:4px;">
-          Quality: <span id="quality-value">92</span>%
-        </label>
-        <input type="range" id="quality-slider" min="1" max="100" value="92" style="width:100%; cursor:pointer;" />
-        <div style="font-size:10px; color:#666; margin-top:4px;">
-          Higher quality = larger file size
+    <div class="r-card">
+      <input type="radio" name="action" id="action-clipboard" value="clipboard" />
+      <label for="action-clipboard">Copy to Clipboard</label>
+    </div>
+    <div class="r-card">
+      <input type="radio" name="action" id="action-both" value="both" />
+      <label for="action-both">Download + Copy</label>
+    </div>
+    <div class="r-card">
+      <input type="radio" name="action" id="action-edit" value="edit" />
+      <label for="action-edit">Open in Editor</label>
+    </div>
+  </div>
+  <div class="card-grid cols-2" style="margin-bottom: 4px;">
+    <div class="r-card" id="label-upload">
+      <input type="radio" name="action" id="action-upload" value="upload" />
+      <label for="action-upload">Upload to ImgBB</label>
+    </div>
+    <div class="r-card" id="label-upload-copy">
+      <input type="radio" name="action" id="action-upload-copy" value="upload_copy" />
+      <label for="action-upload-copy">Upload &amp; Copy URL</label>
+    </div>
+  </div>
+  <p class="warning-text" id="upload-api-hint" style="display:none; margin-bottom: 8px;">
+    API key required — configure in Settings below.
+  </p>
+
+  <!-- Status indicator -->
+  <div id="status-indicator"><div id="status-text">Capturing...</div></div>
+
+  <!-- Primary capture button -->
+  <button id="start">Capture Screenshot</button>
+
+  <!-- ── Advanced Settings ─────────────────────────────────────────────────── -->
+  <div class="collapsible">
+    <div class="collapsible-head" id="adv-trigger">
+      <span>Advanced Settings</span>
+      <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
+        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="collapsible-body" id="adv-body">
+
+      <!-- Format & Quality -->
+      <div class="sec-label">Format</div>
+      <div class="card-grid cols-3" style="margin-bottom: 0;">
+        <div class="r-card">
+          <input type="radio" name="format" id="format-png" value="png" checked />
+          <label for="format-png">PNG</label>
+        </div>
+        <div class="r-card">
+          <input type="radio" name="format" id="format-jpeg" value="jpeg" />
+          <label for="format-jpeg">JPEG</label>
+        </div>
+        <div class="r-card">
+          <input type="radio" name="format" id="format-webp" value="webp" />
+          <label for="format-webp">WebP</label>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
-      <input type="checkbox" id="delay-toggle" /> Capture Delay
-    </label>
-    <div id="delay-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="delay" id="delay-0" value="0" checked /> None
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="delay" id="delay-3" value="3" /> 3s
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="delay" id="delay-5" value="5" /> 5s
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="delay" id="delay-10" value="10" /> 10s
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="delay" id="delay-custom" value="custom" /> Custom:
-        </label>
-      </div>
-      <div style="margin-top:6px;">
-        <input type="number" id="custom-delay-input" min="1" max="60" placeholder="seconds" style="width:80px; font-size:11px; padding:3px 5px;" disabled />
-      </div>
-      <div style="font-size:10px; color:#666; margin-top:6px;">
-        Useful for hover menus, dropdowns, tooltips
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <div style="padding:5px 8px; background:#f0f0f0; font-weight:600;">
-      Output Action
-    </div>
-    <div style="padding:6px 8px;">
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-download" value="download" checked /> Download
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-clipboard" value="clipboard" /> Clipboard
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-both" value="both" /> Both
-        </label>
-        <label style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-edit" value="edit" /> Edit
-        </label>
-        <label id="label-upload" style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-upload" value="upload" /> Upload to ImgBB
-        </label>
-        <label id="label-upload-copy" style="font-size:11px; display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="radio" name="action" id="action-upload-copy" value="upload_copy" /> Upload & Copy URL
-        </label>
-      </div>
-      <div style="font-size:10px; color:#666; margin-top:6px;">
-        Download, copy to clipboard, edit with annotations, or upload to ImgBB<br>
-        <span style="color:#ff9800;">Upload options require API key (configure in Settings)</span>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
-      <input type="checkbox" id="responsive-toggle" /> Responsive capture
-    </label>
-    <div id="device-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px;">
-      <div id="device-list"></div>
-      <div id="custom-rows"></div>
-      <button id="add-custom" type="button" style="margin-top:5px; width:100%; font-size:11px; padding:3px 0; cursor:pointer;">+ Add custom width</button>
-    </div>
-  </div>
-  
-  <div id="status-indicator" style="display:none; margin-top:8px; padding:8px; background:#2196F3; color:white; border-radius:4px; text-align:center; font-size:11px;">
-    <div id="status-text">Capturing...</div>
-  </div>
-
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
-      <input type="checkbox" id="history-toggle" /> History
-    </label>
-    <div id="history-panel" style="display:none; border-top:1px solid #ccc; padding:6px 8px; max-height:300px; overflow-y:auto;">
-      <div id="history-list" style="font-size:11px;">
-        <div style="color:#999; text-align:center; padding:10px 0;">No history yet</div>
-      </div>
-      <button id="clear-history" type="button" style="margin-top:6px; width:100%; font-size:11px; padding:3px 0; cursor:pointer; background:#f44336; color:white; border:none; border-radius:3px;">Clear History</button>
-    </div>
-  </div>
-
-  <div style="margin-top:8px; border:1px solid #ccc; border-radius:4px; overflow:hidden; font-size:12px;">
-    <label style="display:flex; align-items:center; gap:6px; padding:5px 8px; background:#f0f0f0; cursor:pointer; font-weight:600; margin:0;">
-      <input type="checkbox" id="settings-toggle" /> Settings
-    </label>
-    <div id="settings-panel" style="display:none; border-top:1px solid #ccc; padding:8px;">
-      <div style="margin-bottom:8px;">
-        <label style="display:block; font-weight:600; font-size:11px; margin-bottom:4px;">
-          ImgBB API Key
-          <span style="font-weight:normal; color:#666;">(required for upload)</span>
-        </label>
-        <div style="display:flex; gap:4px;">
-          <input type="text" id="imgbb-api-key" placeholder="Enter your ImgBB API key" style="flex:1; font-size:11px; padding:4px; border:1px solid #ccc; border-radius:3px;" />
-          <button id="save-api-key" type="button" style="font-size:11px; padding:4px 12px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:3px; white-space:nowrap;">Save</button>
-          <button id="clear-api-key" type="button" style="font-size:11px; padding:4px 12px; cursor:pointer; background:#f44336; color:white; border:none; border-radius:3px; white-space:nowrap;">Clear</button>
+      <div id="quality-control" style="display:none; margin-top:8px;">
+        <div class="range-wrap">
+          <input type="range" id="quality-slider" min="1" max="100" value="92" />
+          <span class="range-val"><span id="quality-value">92</span>%</span>
         </div>
-        <div id="api-key-status" style="font-size:10px; margin-top:4px; display:none;"></div>
-        <div style="font-size:10px; color:#666; margin-top:6px;">
-          Get your free API key from <a href="https://api.imgbb.com/" target="_blank" style="color:#2196F3;">api.imgbb.com</a>
+        <p class="hint">Higher quality = larger file size</p>
+      </div>
+
+      <hr class="inner-divider" />
+
+      <!-- Filename options -->
+      <div class="sec-row">
+        <div class="sec-label">Filename options</div>
+        <label class="toggle-label">
+          <input type="checkbox" id="naming-toggle" /> Custom
+        </label>
+      </div>
+      <div id="naming-panel" style="display:none;">
+        <div class="check-grid">
+          <div class="check-row">
+            <input type="checkbox" id="include-domain" checked />
+            <label for="include-domain">Domain</label>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="include-title" checked />
+            <label for="include-title">Title</label>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="include-time" checked />
+            <label for="include-time">Timestamp</label>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="include-device" />
+            <label for="include-device">Device</label>
+          </div>
         </div>
+        <input type="text" id="custom-name" class="inp"
+               placeholder="Custom prefix (optional)" style="margin-top: 8px;" />
+      </div>
+
+      <hr class="inner-divider" />
+
+      <!-- Capture delay -->
+      <div class="sec-row">
+        <div class="sec-label">Capture delay</div>
+        <label class="toggle-label">
+          <input type="checkbox" id="delay-toggle" /> Enable
+        </label>
+      </div>
+      <div id="delay-panel" style="display:none;">
+        <div class="card-grid cols-4" style="margin-bottom: 0;">
+          <div class="r-card">
+            <input type="radio" name="delay" id="delay-0" value="0" checked />
+            <label for="delay-0">None</label>
+          </div>
+          <div class="r-card">
+            <input type="radio" name="delay" id="delay-3" value="3" />
+            <label for="delay-3">3s</label>
+          </div>
+          <div class="r-card">
+            <input type="radio" name="delay" id="delay-5" value="5" />
+            <label for="delay-5">5s</label>
+          </div>
+          <div class="r-card">
+            <input type="radio" name="delay" id="delay-10" value="10" />
+            <label for="delay-10">10s</label>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+          <div class="r-card" style="flex-shrink:0;">
+            <input type="radio" name="delay" id="delay-custom" value="custom" />
+            <label for="delay-custom">Custom</label>
+          </div>
+          <input type="number" id="custom-delay-input" class="inp-num"
+                 min="1" max="60" placeholder="sec" disabled
+                 style="flex:1; width:auto;" />
+        </div>
+        <p class="hint" style="margin-top:6px;">
+          Useful for hover menus, dropdowns, and tooltips
+        </p>
+      </div>
+
+      <hr class="inner-divider" />
+
+      <!-- Responsive capture -->
+      <div class="sec-row">
+        <div class="sec-label">Responsive capture</div>
+        <label class="toggle-label">
+          <input type="checkbox" id="responsive-toggle" /> Enable
+        </label>
+      </div>
+      <div id="device-panel" style="display:none;">
+        <div id="device-list"></div>
+        <div id="custom-rows"></div>
+        <button id="add-custom" type="button" class="btn-add">+ Add custom width</button>
+      </div>
+
+      <hr class="inner-divider" />
+
+      <!-- ImgBB API Key -->
+      <div class="sec-label" style="margin-bottom:6px;">
+        ImgBB API Key
+        <span style="text-transform:none; letter-spacing:0; font-weight:400;
+                     color:var(--text-3);"> — required for upload</span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="imgbb-api-key" class="inp"
+               placeholder="Enter your API key" style="flex:1;" />
+        <button id="save-api-key"  type="button" class="btn btn-dark">Save</button>
+        <button id="clear-api-key" type="button" class="btn btn-outline-danger">Clear</button>
+      </div>
+      <div id="api-key-status" style="display:none;"></div>
+      <p class="hint" style="margin-top:5px;">
+        Get your free key at
+        <a href="https://api.imgbb.com/" target="_blank">api.imgbb.com</a>
+      </p>
+
+    </div>
+  </div>
+
+  <!-- ── History ────────────────────────────────────────────────────────────── -->
+  <div class="collapsible">
+    <div class="collapsible-head" id="hist-trigger">
+      <span>History</span>
+      <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
+        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="collapsible-body" id="hist-body">
+      <!-- Hidden checkbox kept for popup.js compatibility -->
+      <input type="checkbox" id="history-toggle" style="display:none;" />
+      <div id="history-panel" style="display:none;">
+        <div id="history-list">
+          <div class="hist-empty">No history yet</div>
+        </div>
+        <button id="clear-history" type="button">Clear all history</button>
       </div>
     </div>
   </div>
+
+  <!-- Hidden elements kept for popup.js compatibility -->
+  <input type="checkbox" id="settings-toggle" style="display:none;" />
+  <div id="settings-panel" style="display:none;"></div>
 
   <script src="popup.js"></script>
+  <script src="popup-ui.js"></script>
+
 </body>
 </html>
