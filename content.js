@@ -230,13 +230,6 @@ async function captureFullPage(device, namingConfig, formatConfig) {
 }
 
 async function startFullPageCapture(namingConfig, formatConfig) {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #wpadminbar { display: none !important; }
-    html { margin: 0 !important; }
-  `;
-  document.head.appendChild(style);
-
   await sleep(500);
 
   const width = window.innerWidth;
@@ -254,12 +247,6 @@ async function startFullPageCapture(namingConfig, formatConfig) {
 }
 
 async function startResponsiveCapture(breakpoints, namingConfig, formatConfig) {
-  const style = document.createElement('style');
-  style.innerHTML = `
-    #wpadminbar { display: none !important; }
-    html { margin: 0 !important; }
-  `;
-  document.head.appendChild(style);
 
   await sleep(500);
 

@@ -1,26 +1,42 @@
-// ── Collapsible triggers ──────────────────────────────────────────────────────
-function initCollapsible(headId, bodyId) {
-  const head = document.getElementById(headId);
-  const body = document.getElementById(bodyId);
-  head.addEventListener('click', () => {
-    const opening = !body.classList.contains('open');
-    head.classList.toggle('open', opening);
-    body.classList.toggle('open', opening);
+// ── View switching ────────────────────────────────────────────────────────────
+const views = ['view-main', 'view-settings', 'view-history'];
+
+function showView(id) {
+  views.forEach(v => {
+    document.getElementById(v).style.display = v === id ? 'block' : 'none';
   });
 }
 
-// Advanced settings — pure CSS collapsible
-initCollapsible('adv-trigger', 'adv-body');
+// Settings icon → open settings view
+document.getElementById('btn-settings').addEventListener('click', () => {
+  showView('view-settings');
+  // Sync hidden checkbox so popup.js makes settings-panel visible
+  const cb = document.getElementById('settings-toggle');
+  cb.checked = true;
+  cb.dispatchEvent(new Event('change'));
+});
 
-// History — also syncs hidden checkbox so popup.js fires loadHistory()
-const histHead = document.getElementById('hist-trigger');
-const histBody = document.getElementById('hist-body');
-histHead.addEventListener('click', () => {
-  const opening = !histBody.classList.contains('open');
-  histHead.classList.toggle('open', opening);
-  histBody.classList.toggle('open', opening);
+// Back from settings
+document.getElementById('btn-back-settings').addEventListener('click', () => {
+  showView('view-main');
+  const cb = document.getElementById('settings-toggle');
+  cb.checked = false;
+  cb.dispatchEvent(new Event('change'));
+});
+
+// History icon → open history view + trigger loadHistory() via popup.js
+document.getElementById('btn-history').addEventListener('click', () => {
+  showView('view-history');
   const cb = document.getElementById('history-toggle');
-  cb.checked = opening;
+  cb.checked = true;
+  cb.dispatchEvent(new Event('change'));
+});
+
+// Back from history
+document.getElementById('btn-back-history').addEventListener('click', () => {
+  showView('view-main');
+  const cb = document.getElementById('history-toggle');
+  cb.checked = false;
   cb.dispatchEvent(new Event('change'));
 });
 

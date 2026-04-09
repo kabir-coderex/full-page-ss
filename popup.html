@@ -44,7 +44,7 @@
     /* ── Header ─────────────────────────────────────────────────────────────── */
     .header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
     }
@@ -58,6 +58,59 @@
       font-size: 11px;
       color: var(--text-3);
       margin-top: 1px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: background 0.08s, color 0.08s, border-color 0.08s;
+      flex-shrink: 0;
+    }
+    .icon-btn:hover {
+      background: var(--surface);
+      color: var(--text-2);
+      border-color: var(--border-mid);
+    }
+
+    /* ── View header (Settings / History views) ──────────────────────────────── */
+    .view-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.08s, border-color 0.08s;
+    }
+    .back-btn:hover { background: var(--surface); border-color: var(--border-mid); }
+    .view-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
     }
 
     /* ── Filename preview ────────────────────────────────────────────────────── */
@@ -372,7 +425,8 @@
       cursor: pointer;
       letter-spacing: -0.01em;
       transition: opacity 0.1s;
-      margin-top: 16px;
+      margin-top: 0;
+      margin-bottom: 16px;
     }
     #start:hover   { opacity: 0.88; }
     #start:active  { opacity: 0.72; }
@@ -434,6 +488,7 @@
       font-size: 12px;
       font-weight: 500;
       margin-top: 10px;
+      margin-bottom: 6px;
       background: var(--status-bg);
       color: white;
     }
@@ -572,92 +627,126 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="header">
-    <div>
-      <div class="header-name">Screenshot</div>
-      <div class="header-sub">Full-page capture tool</div>
-    </div>
-  </div>
+  <!-- ══════════════════════════════════════════════════════
+       VIEW: MAIN
+  ══════════════════════════════════════════════════════ -->
+  <div id="view-main">
 
-  <!-- Filename preview -->
-  <div class="preview-box">
-    <div class="preview-label">Output filename</div>
-    <div class="preview-value" id="filename-preview-value">screenshot.png</div>
-  </div>
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <div class="header-name">Screenshot</div>
+        <div class="header-sub">Full-page capture tool</div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-history" title="History">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M7 4.5V7L8.5 8.5" stroke="currentColor" stroke-width="1.3"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-settings" title="Settings">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M7 1v1.5M7 11.5V13M1 7h1.5M11.5 7H13
+                     M2.93 2.93l1.06 1.06M10.01 10.01l1.06 1.06
+                     M2.93 11.07l1.06-1.06M10.01 3.99l1.06-1.06"
+                  stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-  <!-- Capture mode -->
-  <div class="sec-label">Capture mode</div>
-  <div class="seg-group cols-2">
-    <div class="seg-item">
-      <input type="radio" name="captureMode" id="mode-full" value="full" checked />
-      <label for="mode-full">Full Page</label>
+    <!-- Filename preview -->
+    <div class="preview-box">
+      <div class="preview-label">Output filename</div>
+      <div class="preview-value" id="filename-preview-value">screenshot.png</div>
     </div>
-    <div class="seg-item">
-      <input type="radio" name="captureMode" id="mode-visible" value="visible" />
-      <label for="mode-visible">Visible Area</label>
-    </div>
-    <div class="seg-item">
-      <input type="radio" name="captureMode" id="mode-area" value="area" />
-      <label for="mode-area">Select Area</label>
-    </div>
-    <div class="seg-item">
-      <input type="radio" name="captureMode" id="mode-element" value="element" />
-      <label for="mode-element">Select Element</label>
-    </div>
-  </div>
 
-  <!-- Output action -->
-  <div class="sec-label">Output action</div>
-  <div class="seg-group cols-2">
-    <div class="seg-item">
-      <input type="radio" name="action" id="action-download" value="download" checked />
-      <label for="action-download">Download</label>
-    </div>
-    <div class="seg-item">
-      <input type="radio" name="action" id="action-clipboard" value="clipboard" />
-      <label for="action-clipboard">Copy to Clipboard</label>
-    </div>
-    <div class="seg-item">
-      <input type="radio" name="action" id="action-both" value="both" />
-      <label for="action-both">Download + Copy</label>
-    </div>
-    <div class="seg-item">
-      <input type="radio" name="action" id="action-edit" value="edit" />
-      <label for="action-edit">Open in Editor</label>
-    </div>
-  </div>
-  <div class="seg-group cols-2" style="margin-bottom: 0;">
-    <div class="seg-item" id="label-upload">
-      <input type="radio" name="action" id="action-upload" value="upload" />
-      <label for="action-upload">Upload to ImgBB</label>
-    </div>
-    <div class="seg-item" id="label-upload-copy">
-      <input type="radio" name="action" id="action-upload-copy" value="upload_copy" />
-      <label for="action-upload-copy">Upload &amp; Copy URL</label>
-    </div>
-  </div>
-  <div class="upload-hint" id="upload-api-hint">
-    These options require an ImgBB API key.<br>
-    Open <strong>Advanced Settings</strong> below and add your key to enable them.
-  </div>
+    <!-- PRIMARY: Capture button -->
+    <button id="start">Capture Screenshot</button>
 
-  <!-- Status indicator -->
-  <div id="status-indicator"><div id="status-text">Capturing...</div></div>
+    <!-- Status indicator -->
+    <div id="status-indicator"><div id="status-text">Capturing...</div></div>
 
-  <!-- Primary capture button -->
-  <button id="start">Capture Screenshot</button>
-
-  <!-- ── Advanced Settings ─────────────────────────────────────────────────── -->
-  <div class="collapsible">
-    <div class="collapsible-head" id="adv-trigger">
-      <span>Advanced Settings</span>
-      <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
-        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5"
-              stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <!-- Capture mode -->
+    <div class="sec-label">Capture mode</div>
+    <div class="seg-group cols-2">
+      <div class="seg-item">
+        <input type="radio" name="captureMode" id="mode-full" value="full" checked />
+        <label for="mode-full">Full Page</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="captureMode" id="mode-visible" value="visible" />
+        <label for="mode-visible">Visible Area</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="captureMode" id="mode-area" value="area" />
+        <label for="mode-area">Select Area</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="captureMode" id="mode-element" value="element" />
+        <label for="mode-element">Select Element</label>
+      </div>
     </div>
-    <div class="collapsible-body" id="adv-body">
+
+    <!-- Output action -->
+    <div class="sec-label">Output action</div>
+    <div class="seg-group cols-2">
+      <div class="seg-item">
+        <input type="radio" name="action" id="action-download" value="download" checked />
+        <label for="action-download">Download</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="action" id="action-clipboard" value="clipboard" />
+        <label for="action-clipboard">Copy to Clipboard</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="action" id="action-both" value="both" />
+        <label for="action-both">Download + Copy</label>
+      </div>
+      <div class="seg-item">
+        <input type="radio" name="action" id="action-edit" value="edit" />
+        <label for="action-edit">Open in Editor</label>
+      </div>
+    </div>
+    <div class="seg-group cols-2" style="margin-bottom: 0;">
+      <div class="seg-item" id="label-upload">
+        <input type="radio" name="action" id="action-upload" value="upload" />
+        <label for="action-upload">Upload to ImgBB</label>
+      </div>
+      <div class="seg-item" id="label-upload-copy">
+        <input type="radio" name="action" id="action-upload-copy" value="upload_copy" />
+        <label for="action-upload-copy">Upload &amp; Copy URL</label>
+      </div>
+    </div>
+    <div class="upload-hint" id="upload-api-hint">
+      Requires an ImgBB API key — tap the settings icon above to add one.
+    </div>
+
+  </div><!-- /view-main -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       VIEW: SETTINGS
+  ══════════════════════════════════════════════════════ -->
+  <div id="view-settings" style="display:none;">
+
+    <!-- View header -->
+    <div class="view-header">
+      <button class="back-btn" id="btn-back-settings" title="Back">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+          <path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="view-title">Settings</span>
+    </div>
+
+    <!-- Hidden checkbox kept for popup.js compatibility -->
+    <input type="checkbox" id="settings-toggle" style="display:none;" />
+    <div id="settings-panel">
 
       <!-- Format & Quality -->
       <div class="sec-label">Format</div>
@@ -792,33 +881,38 @@
         <a href="https://api.imgbb.com/" target="_blank">api.imgbb.com</a>
       </p>
 
-    </div>
-  </div>
+    </div><!-- /settings-panel -->
 
-  <!-- ── History ────────────────────────────────────────────────────────────── -->
-  <div class="collapsible">
-    <div class="collapsible-head" id="hist-trigger">
-      <span>History</span>
-      <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
-        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5"
-              stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+  </div><!-- /view-settings -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       VIEW: HISTORY
+  ══════════════════════════════════════════════════════ -->
+  <div id="view-history" style="display:none;">
+
+    <!-- View header -->
+    <div class="view-header">
+      <button class="back-btn" id="btn-back-history" title="Back">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+          <path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="view-title">History</span>
     </div>
-    <div class="collapsible-body" id="hist-body">
-      <!-- Hidden checkbox kept for popup.js compatibility -->
-      <input type="checkbox" id="history-toggle" style="display:none;" />
-      <div id="history-panel" style="display:none;">
-        <div id="history-list">
-          <div class="hist-empty">No history yet</div>
-        </div>
-        <button id="clear-history" type="button">Clear all history</button>
+
+    <!-- Hidden checkbox kept for popup.js compatibility -->
+    <input type="checkbox" id="history-toggle" style="display:none;" />
+    <div id="history-panel">
+      <div id="history-list">
+        <div class="hist-empty">No history yet</div>
       </div>
+      <button id="clear-history" type="button">Clear all history</button>
     </div>
-  </div>
 
-  <!-- Hidden elements kept for popup.js compatibility -->
-  <input type="checkbox" id="settings-toggle" style="display:none;" />
-  <div id="settings-panel" style="display:none;"></div>
+  </div><!-- /view-history -->
+
 
   <script src="popup.js"></script>
   <script src="popup-ui.js"></script>
